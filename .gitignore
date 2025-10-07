@@ -1,0 +1,16 @@
+__pycache__
+logs/
+.local/
+wandb/
+artifacts/
+.hypothesis/
+.pytest_cache/
+.vscode/
+
+.venv/
+src/data/
+src/ft/
+src/lm/
+src/prompt/
+src/quant/
+src/tests/
