@@ -74,7 +74,7 @@ indent-style = "space"
 line-ending = "auto"
 
 [tool.pyright]
-include = ["data", "model", "ft", "quant", "prompt", "tests"]
+include = ["src", "tests"]
 exclude = [
     "**/__pycache__",
     ".venv",
