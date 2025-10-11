@@ -1,8 +1,8 @@
-import pytest
+# import pytest
 
-from data.utils import read_corpus
+# from data.utils import read_data
 
 
-@pytest.fixture(scope="module")
-def test_corpus():
-    return read_corpus("data/tinyshakespeare.txt")
+# @pytest.fixture(scope="module")
+# def test_corpus():
+#     return read_corpus("data/tinyshakespeare.txt")
