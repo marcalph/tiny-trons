@@ -1,33 +1,33 @@
-import logging
+from abc import ABC, abstractmethod
 
 import torch
 
-logger = logging.getLogger(__name__)
 
+class Tokenizer(ABC):
+    def __init__(self, corpus: str):
+        self.vocab: list[str] = []
+        self.toktoi: dict[str, int] = {}
+        self.itotok: dict[int, str] = {}
+        self.vocab_sz: int = 0
+        self._build_vocab(corpus)
 
-class Tokenizer:
-    def __init__(self, corpus):
-        self.vocab = sorted(set(corpus))
-        self.toktoi = {c: i for i, c in enumerate(self.vocab)}
-        self.itotok = {i: c for c, i in self.toktoi.items()}
-        self.vocab_sz = len(self.toktoi)
+    @abstractmethod
+    def _build_vocab(self, corpus: str) -> None: ...
 
     def encode(self, text: str) -> torch.Tensor:
         return torch.tensor([self.toktoi[token] for token in text], dtype=torch.long)
 
     def decode(self, tokens: torch.LongTensor) -> str:
-        return "".join([self.itotok[tokenid] for tokenid in tokens.tolist])
+        return "".join([self.itotok[tokenid] for tokenid in tokens.tolist()])
 
 
 # TODO(marcalph): implement BPE/SentencePiece tokenizers
 class CharTokenizer(Tokenizer):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, corpus):
+        super().__init__(corpus)
 
-    def read(self, corpus: str) -> list:
-        logger.info(f"Tokenization corpus lenght in characters: {len(corpus)}")
-        tokenized_corpus = sorted(set(corpus))
-        self.toktoi = {c: i for i, c in enumerate(tokenized_corpus)}
+    def _build_vocab(self, corpus) -> None:
+        self.vocab = sorted(set(corpus))
+        self.toktoi = {c: i for i, c in enumerate(self.vocab)}
         self.itotok = {i: c for c, i in self.toktoi.items()}
         self.vocab_sz = len(self.toktoi)
-        self.vocab = "".join(tokenized_corpus)
