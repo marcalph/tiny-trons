@@ -2755,6 +2755,7 @@ dev = [
 [package.dev-dependencies]
 dev = [
     { name = "pydantic-settings" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -2785,7 +2786,10 @@ requires-dist = [
 provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pydantic-settings", specifier = ">=2.11.0" }]
+dev = [
+    { name = "pydantic-settings", specifier = ">=2.11.0" },
+    { name = "ruff", specifier = ">=0.13.3" },
+]
 
 [[package]]
 name = "tokenizers"

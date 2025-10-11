@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 import torch
+from loguru import logger
 
 
 class Tokenizer(ABC):
@@ -31,3 +32,4 @@ class CharTokenizer(Tokenizer):
         self.toktoi = {c: i for i, c in enumerate(self.vocab)}
         self.itotok = {i: c for c, i in self.toktoi.items()}
         self.vocab_sz = len(self.toktoi)
+        logger.debug(f"Built vocabulary for {self}.")
