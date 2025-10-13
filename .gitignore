@@ -9,7 +9,7 @@ artifacts/
 
 .venv/
 src/ft/
-src/lm/
+src/lmold
 src/prompt/
 src/quant/
 src/tests/
