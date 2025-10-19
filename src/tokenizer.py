@@ -18,7 +18,7 @@ class Tokenizer(ABC):
     def encode(self, text: str) -> torch.Tensor:
         return torch.tensor([self.toktoi[token] for token in text], dtype=torch.long)
 
-    def decode(self, tokens: torch.LongTensor) -> str:
+    def decode(self, tokens: torch.Tensor) -> str:
         return "".join([self.itotok[tokenid] for tokenid in tokens.tolist()])
 
 
