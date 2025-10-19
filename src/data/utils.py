@@ -17,12 +17,11 @@ class Dataset:
             return cls(f.read())
 
     def split(self, train_pct: float = 0.9) -> tuple[str, str]:
-        n = train_pct * len(self.corpus)
+        n = int(train_pct * len(self.corpus))
         train, val = self.corpus[:n], self.corpus[:n]
         return train, val
 
 
-# TODO(marcalph) define hparams class
 class Dataloader:
     def __init__(
         self, dataset: Dataset, tokenizer: Tokenizer, block_sz: int = 8, batch_sz: int = 4

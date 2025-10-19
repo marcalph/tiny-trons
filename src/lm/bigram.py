@@ -4,7 +4,8 @@ import torch.nn as nn
 from loguru import logger
 from torch.nn import functional as F
 
-from src.data.utils import SETTINGS, Dataloader, Dataset
+from src.data.utils import Dataloader, Dataset
+from src.lm.utils import SETTINGS
 from src.tokenizer import CharTokenizer
 
 torch.manual_seed(1337)
