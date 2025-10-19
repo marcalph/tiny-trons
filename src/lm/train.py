@@ -1,10 +1,27 @@
 import torch
-from bigram import BigramLM
 from loguru import logger
 from torch.optim.adamw import AdamW
 
-from src.data.utils import SETTINGS, Dataloader, Dataset
+from src.data.utils import Dataloader, Dataset
+from src.lm.bigram import BigramLM
+from src.lm.utils import HPARAMS, SETTINGS
 from src.tokenizer import CharTokenizer
+
+
+@torch.no_grad
+def estimate_loss(dl, model):
+    out = {}
+    model.eval()
+    for split in ["train", "val"]:
+        losses = torch.zeros(HPARAMS.eval_iters)
+        for k in range(HPARAMS.max_iters):
+            X, Y = dl.get_batch(ds.corpus)
+            _, loss = model(X, Y)
+            losses[k] = loss.item()
+            out[split] = losses.mean()
+    model.train()
+    return out
+
 
 if __name__ == "__main__":
     batch_sz = 32

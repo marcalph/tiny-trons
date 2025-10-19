@@ -2,13 +2,8 @@ from pathlib import Path
 from typing import Self
 
 import torch
-from pydantic_settings import BaseSettings
 
 from src.tokenizer import Tokenizer
-
-
-class Settings(BaseSettings):
-    data_path: Path = Path("./src/data/tinyshakespeare.txt")
 
 
 # class should prolly inherit from sequence
@@ -52,6 +47,3 @@ class Dataloader:
         xb = torch.stack([split[i : i + self.block_sz] for i in ix])
         yb = torch.stack([split[i + 1 : i + self.block_sz + 1] for i in ix])
         return xb, yb
-
-
-SETTINGS = Settings()
