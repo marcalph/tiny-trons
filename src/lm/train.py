@@ -16,8 +16,7 @@ def estimate_loss(dl, model):
         losses = torch.zeros(HPARAMS.eval_iters)
         for k in range(HPARAMS.eval_iters):
             X, Y = dl.get_batch(split)
-            X.to(HPARAMS.device)
-            Y.to(HPARAMS.device)
+            X, Y = X.to(HPARAMS.device), Y.to(HPARAMS.device)
             _, loss = model(X, Y)
             losses[k] = loss.item()
             out[name] = losses.mean()
@@ -33,15 +32,14 @@ if __name__ == "__main__":
     train, val = ds.split()
     xb, yb = dl.get_batch(train)
     m = BigramLM(tok.vocab_sz)
-    m.to(HPARAMS.device)
+    m = m.to(HPARAMS.device)
     logits, loss = m(xb, yb)
     opt = AdamW(m.parameters(), lr=1e-3)
 
     # train loop
     for _ in range(HPARAMS.max_iters):
         xb, yb = dl.get_batch(ds.corpus)
-        xb.to(HPARAMS.device)
-        yb.to(HPARAMS.device)
+        xb, yb = xb.to(HPARAMS.device), yb.to(HPARAMS.device)
         logits, loss = m(xb, yb)
         opt.zero_grad(set_to_none=True)  # sets .grad to None to save mem
         loss.backward()
