@@ -32,12 +32,23 @@ pre-commit install
 
 ### WSL + AMD GPU (ROCm)
 
-After `uv sync`, replace PyTorch with ROCm version:
+After `uv sync`, install PyTorch ROCm and apply WSL2 fix:
 
 ```bash
+# Install dependencies
 uv sync
+
+# Install PyTorch with ROCm support
 uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.4
+
+# WSL2 fix: Remove conflicting HSA library (required for GPU detection)
+rm $(python -c "import torch; print(torch.__path__[0])")/lib/libhsa-runtime64.so*
+
+# Verify GPU is detected
+python -c "import torch; print(f'GPU: {torch.cuda.get_device_name(0)}')"
 ```
+
+**Note:** Use `python` directly, not `uv run` (which reinstalls PyPI torch).
 
 ## Usage
 
@@ -60,11 +71,11 @@ Hyperparameters are configured in `src/lm/utils.py`:
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `batch_sz` | 32 | Batch size |
-| `block_sz` | 8 | Context window size |
-| `max_iters` | 3000 | Training iterations |
+| `batch_sz` | 64 | Batch size (B) |
+| `block_sz` | 256 | Context window size (T) |
+| `max_iters` | 10000 | Training iterations |
 | `eval_iters` | 200 | Steps between evaluations |
-| `lr` | 3e-4 | Learning rate |
+| `lr` | 1e-2 | Learning rate |
 | `device` | auto | Automatically detects CUDA/CPU |
 
 ## Project Structure
@@ -180,14 +191,11 @@ SSH into your Windows WSL2 instance from Mac:
 ssh <wsl-username>@<WINDOWS_IP>
 
 # Navigate and train
-cd ~/tiny-trons
+cd ~/projects/tiny-trons
 python src/lm/train.py
-
-# Monitor GPU (in separate SSH session)
-watch -n 1 rocm-smi
 ```
 
-See `TODO.md` for full WSL2 + ROCm setup instructions.
+**Note:** `rocm-smi` doesn't work in WSL2 (no native amdgpu driver), but training works fine.
 
 ## License
 

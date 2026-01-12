@@ -38,7 +38,15 @@ if __name__ == "__main__":
     corpus = Corpus.from_file(SETTINGS.data_path)
     tok = CharTokenizer(corpus=corpus.text)
 
-    train_loader, val_loader = create_dataloaders(corpus, tok, HPARAMS.block_sz, HPARAMS.batch_sz)
+    use_cuda = HPARAMS.device == "cuda"
+    train_loader, val_loader = create_dataloaders(
+        corpus,
+        tok,
+        HPARAMS.block_sz,
+        HPARAMS.batch_sz,
+        num_workers=2 if use_cuda else 0,
+        pin_memory=use_cuda,
+    )
 
     model = BigramLM(tok.vocab_sz)
     model = model.to(HPARAMS.device)

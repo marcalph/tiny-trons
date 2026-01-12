@@ -45,6 +45,8 @@ def create_dataloaders(
     block_sz: int,
     batch_sz: int,
     train_pct: float = 0.9,
+    num_workers: int = 0,
+    pin_memory: bool = False,
 ) -> tuple[DataLoader, DataLoader]:
     """Create train and validation DataLoaders from corpus."""
     train_text, val_text = corpus.split(train_pct)
@@ -55,7 +57,19 @@ def create_dataloaders(
     train_dataset = TextDataset(train_data, block_sz)
     val_dataset = TextDataset(val_data, block_sz)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_sz, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_sz, shuffle=False)
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_sz,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+    )
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_sz,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+    )
 
     return train_loader, val_loader
