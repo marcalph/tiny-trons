@@ -2,14 +2,32 @@ from pathlib import Path
 from typing import Self
 
 import torch
+from torch.utils.data import DataLoader, Dataset
 
 from src.tokenizer import Tokenizer
 
 
-# class should prolly inherit from sequence
-class Dataset:
-    def __init__(self, corpus: str) -> None:
-        self.corpus = corpus
+class TextDataset(Dataset):
+    """PyTorch Dataset for character-level language modeling."""
+
+    def __init__(self, data: torch.Tensor, block_sz: int) -> None:
+        self.data = data
+        self.block_sz = block_sz
+
+    def __len__(self) -> int:
+        return len(self.data) - self.block_sz
+
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
+        x = self.data[idx : idx + self.block_sz]
+        y = self.data[idx + 1 : idx + self.block_sz + 1]
+        return x, y
+
+
+class Corpus:
+    """Handles loading and splitting text corpus."""
+
+    def __init__(self, text: str) -> None:
+        self.text = text
 
     @classmethod
     def from_file(cls, file_path: Path) -> Self:
@@ -17,32 +35,27 @@ class Dataset:
             return cls(f.read())
 
     def split(self, train_pct: float = 0.9) -> tuple[str, str]:
-        n = int(train_pct * len(self.corpus))
-        train, val = self.corpus[:n], self.corpus[:n]
-        return train, val
+        n = int(train_pct * len(self.text))
+        return self.text[:n], self.text[n:]
 
 
-class Dataloader:
-    def __init__(
-        self, dataset: Dataset, tokenizer: Tokenizer, block_sz: int = 8, batch_sz: int = 4
-    ):
-        self.dataset = dataset
-        self.tokenizer = tokenizer
-        self.batch_sz = batch_sz
-        self.block_sz = block_sz  # context size
-        torch.manual_seed(1337)
+def create_dataloaders(
+    corpus: Corpus,
+    tokenizer: Tokenizer,
+    block_sz: int,
+    batch_sz: int,
+    train_pct: float = 0.9,
+) -> tuple[DataLoader, DataLoader]:
+    """Create train and validation DataLoaders from corpus."""
+    train_text, val_text = corpus.split(train_pct)
 
-    def _consume(self, split: torch.LongTensor):
-        x = split[: self.block_sz]
-        y = split[1 : self.block_sz + 1]
-        for t in range(self.block_sz):
-            context = x[: t + 1]
-            target = y[t]
-        return context, target
+    train_data = tokenizer.encode(train_text)
+    val_data = tokenizer.encode(val_text)
 
-    def get_batch(self, split):
-        split = self.tokenizer.encode(split)
-        ix = torch.randint(len(split) - self.block_sz, (self.batch_sz,))
-        xb = torch.stack([split[i : i + self.block_sz] for i in ix])
-        yb = torch.stack([split[i + 1 : i + self.block_sz + 1] for i in ix])
-        return xb, yb
+    train_dataset = TextDataset(train_data, block_sz)
+    val_dataset = TextDataset(val_data, block_sz)
+
+    train_loader = DataLoader(train_dataset, batch_size=batch_sz, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_sz, shuffle=False)
+
+    return train_loader, val_loader

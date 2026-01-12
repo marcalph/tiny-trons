@@ -4,7 +4,7 @@ import torch.nn as nn
 from loguru import logger
 from torch.nn import functional as F
 
-from src.data.utils import Dataloader, Dataset
+from src.data.utils import Corpus, create_dataloaders
 from src.lm.utils import SETTINGS
 from src.tokenizer import CharTokenizer
 
@@ -23,7 +23,6 @@ class BigramLM(nn.Module):
     def forward(self, idx, targets=None):
         # idx and targets are (B, T)
         logits = self.embeddings(idx)  # (B, T, C=nEmb=vocab_sz)
-        # logits = self.lm_head(logits)
 
         if targets is None:
             loss = None
@@ -35,7 +34,7 @@ class BigramLM(nn.Module):
         return logits, loss
 
     def generate(self, idx: torch.Tensor, max_new_tokens) -> torch.Tensor:
-        # idx is (B, T), logits is (b, T, C) not flatten because no targets are provided
+        # idx is (B, T), logits is (B, T, C) not flattened because no targets provided
         for _ in range(max_new_tokens):
             logits, _ = self(idx)
             logits = logits[:, -1, :]
@@ -46,14 +45,17 @@ class BigramLM(nn.Module):
 
 
 if __name__ == "__main__":
-    ds = Dataset.from_file(SETTINGS.data_path)
-    tok = CharTokenizer(corpus=ds.corpus)
-    dl = Dataloader(ds, tok, 8, 4)
-    xb, yb = dl.get_batch(ds.corpus)
+    corpus = Corpus.from_file(SETTINGS.data_path)
+    tok = CharTokenizer(corpus=corpus.text)
+    train_loader, _ = create_dataloaders(corpus, tok, block_sz=8, batch_sz=4)
+
+    xb, yb = next(iter(train_loader))
     m = BigramLM(tok.vocab_sz)
     logits, loss = m(xb, yb)
     logger.debug(f"logits.shape -> {logits.shape}")
     logger.debug(loss)
-    print(-np.log(1 / tok.vocab_sz), loss)
+    print(f"Expected loss: {-np.log(1 / tok.vocab_sz):.4f}, Actual: {loss:.4f}")
 
-    print(tok.decode(m.generate(torch.zeros((1, 1), dtype=torch.long), max_new_tokens=100)[0]))
+    logger.info(
+        tok.decode(m.generate(torch.zeros((1, 1), dtype=torch.long), max_new_tokens=100)[0])
+    )

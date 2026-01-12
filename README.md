@@ -36,7 +36,7 @@ After `uv sync`, replace PyTorch with ROCm version:
 
 ```bash
 uv sync
-uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.2
+uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.4
 ```
 
 ## Usage
