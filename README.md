@@ -30,6 +30,15 @@ uv sync --extra dev
 pre-commit install
 ```
 
+### WSL + AMD GPU (ROCm)
+
+After `uv sync`, replace PyTorch with ROCm version:
+
+```bash
+uv sync
+uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.2
+```
+
 ## Usage
 
 ### Training
@@ -162,7 +171,23 @@ For Apple Silicon (MPS), modify `src/lm/utils.py`:
 device = "mps" if torch.backends.mps.is_available() else "cpu"
 ```
 
-For AMD GPUs with ROCm on WSL2, see `TODO.md` for setup instructions.
+### Remote Training (Windows + AMD GPU)
+
+SSH into your Windows WSL2 instance from Mac:
+
+```bash
+# Connect to WSL2 via Windows IP
+ssh <wsl-username>@<WINDOWS_IP>
+
+# Navigate and train
+cd ~/tiny-trons
+python src/lm/train.py
+
+# Monitor GPU (in separate SSH session)
+watch -n 1 rocm-smi
+```
+
+See `TODO.md` for full WSL2 + ROCm setup instructions.
 
 ## License
 
