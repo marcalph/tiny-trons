@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings
 
 
 class Hparams(BaseSettings):
-    batch_sz: int = 64  # B: number of sequences per batch (larger = better GPU utilization)
+    batch_sz: int = 32  # B: number of sequences per batch (larger = better GPU utilization)
     block_sz: int = 256  # T: context length (larger = more context for model)
     max_iters: int = 10000  # total training steps
     eval_iters: int = 200  # steps between loss evaluation

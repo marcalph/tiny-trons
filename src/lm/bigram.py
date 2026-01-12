@@ -18,7 +18,7 @@ class BigramLM(nn.Module):
         super().__init__()
         self.embeddings = nn.Embedding(
             vocab_sz, vocab_sz
-        )  # Emb_d is num_emb because no project layer
+        )  # Emb_d=num_emb to avoid projection layer
 
     def forward(self, idx, targets=None):
         # idx and targets are (B, T)
