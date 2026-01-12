@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings
 class Hparams(BaseSettings):
     batch_sz: int = 32  # B: number of sequences per batch
     block_sz: int = 8  # T: context length (sequence length)
-    max_iters: int = 3000  # total training steps
+    max_iters: int = 10000  # total training steps
     eval_iters: int = 200  # steps between loss evaluation
     eval_interval: int = 300  # unused currently
     lr: float = 3e-4  # learning rate for AdamW
