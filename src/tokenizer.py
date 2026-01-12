@@ -36,8 +36,8 @@ class CharTokenizer(Tokenizer):
 
 
 if __name__ == "__main__":
-    from src.data.utils import Dataset
+    from src.data.utils import Corpus
     from src.lm.utils import SETTINGS
 
-    ds = Dataset.from_file(file_path=SETTINGS.data_path)
-    tok = CharTokenizer(corpus=ds.corpus)
+    corpus = Corpus.from_file(file_path=SETTINGS.data_path)
+    tok = CharTokenizer(corpus=corpus.text)
