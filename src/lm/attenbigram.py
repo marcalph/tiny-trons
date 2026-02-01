@@ -25,6 +25,7 @@ class AttenBigramLM(nn.Module):
             AttenBlock(emb_d, n_heads=n_heads, block_sz=block_sz),
             AttenBlock(emb_d, n_heads=n_heads, block_sz=block_sz),
             AttenBlock(emb_d, n_heads=n_heads, block_sz=block_sz),
+            nn.LayerNorm(emb_d)
         )
         self.lm_head = nn.Linear(emb_d, vocab_sz)
 

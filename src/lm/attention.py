@@ -16,10 +16,13 @@ class AttenBlock(nn.Module):
         head_sz = emb_d // n_heads
         self.sa = MultiHeadAttention(n_heads, head_sz, emb_d, block_sz)
         self.ffwd = FFN(emb_d)
+        self.ln1 = nn.LayerNorm(emb_d)
+
+        self.ln2 = nn.LayerNorm(emb_d)
     
     def forward(self, x):
-        x = self.sa(x)
-        x = self.ffwd(x)
+        x = self.sa(self.ln1(x)) + x 
+        x = self.ffwd(self.ln2(x)) + x
         return x
 
 
@@ -29,8 +32,9 @@ class FFN(nn.Module):
     def __init__(self, emb_d):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(emb_d, emb_d),
+            nn.Linear(emb_d,  4 * emb_d),
             nn.ReLU(),
+            nn.Linear(4* emb_d,   emb_d),
         )
 
     def forward(self, x):
@@ -72,6 +76,9 @@ class MultiHeadAttention(nn.Module):
     def __init__(self, n_heads, head_sz, emb_d, block_sz):
         super().__init__()
         self.heads = nn.ModuleList([AttentionHead(head_sz, emb_d, block_sz) for _ in range(n_heads)])
+        self. proj = nn.Linear(emb_d, emb_d)
 
     def forward(self, x):
-        return torch.cat([h(x) for h in self.heads], dim=-1)
+        out =  torch.cat([h(x) for h in self.heads], dim=-1)
+        out = self.proj(out)
+        return out
