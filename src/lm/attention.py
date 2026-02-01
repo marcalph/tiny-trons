@@ -10,6 +10,33 @@ x = torch.randn(B, T, C)
 head_sz = 16
 
 
+class AttenBlock(nn.Module):
+    def __init__(self, emb_d, n_heads, block_sz):
+        super().__init__()
+        head_sz = emb_d // n_heads
+        self.sa = MultiHeadAttention(n_heads, head_sz, emb_d, block_sz)
+        self.ffwd = FFN(emb_d)
+    
+    def forward(self, x):
+        x = self.sa(x)
+        x = self.ffwd(x)
+        return x
+
+
+
+
+class FFN(nn.Module):
+    def __init__(self, emb_d):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(emb_d, emb_d),
+            nn.ReLU(),
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+
 class AttentionHead(nn.Module):
     tril : torch.Tensor
 
@@ -22,7 +49,6 @@ class AttentionHead(nn.Module):
         self.key = nn.Linear(self.emb_d, self.head_sz, bias=False)
         self.query = nn.Linear(self.emb_d, head_sz, bias=False)
         self.value = nn.Linear(self.emb_d, head_sz, bias=False)
-
         self.register_buffer('tril', torch.tril(torch.ones(self.block_sz, self.block_sz)))
     
     def forward(self, x):
@@ -40,3 +66,12 @@ class AttentionHead(nn.Module):
         out = wei@v
 
         return out
+    
+
+class MultiHeadAttention(nn.Module):
+    def __init__(self, n_heads, head_sz, emb_d, block_sz):
+        super().__init__()
+        self.heads = nn.ModuleList([AttentionHead(head_sz, emb_d, block_sz) for _ in range(n_heads)])
+
+    def forward(self, x):
+        return torch.cat([h(x) for h in self.heads], dim=-1)

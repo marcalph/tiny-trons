@@ -7,21 +7,25 @@ from torch.nn import functional as F
 from src.data.utils import Corpus, create_dataloaders
 from src.lm.utils import SETTINGS
 from src.tokenizer import CharTokenizer
-from src.lm.attention import AttentionHead
+from src.lm.attention import AttenBlock
 torch.manual_seed(1337)
 
 
 class AttenBigramLM(nn.Module):
     """Simple Bigram model."""
 
-    def __init__(self, vocab_sz, emb_d, block_sz, head_sz):
+    def __init__(self, vocab_sz, emb_d, block_sz, n_heads):
         super().__init__()
         self.block_sz = block_sz
         self.embeddings = nn.Embedding(
             vocab_sz, emb_d
         )
         self.position_embeddings = nn.Embedding(block_sz, emb_d)
-        self.sa_head = AttentionHead(head_sz, emb_d, block_sz)
+        self.blocks = nn.Sequential(
+            AttenBlock(emb_d, n_heads=n_heads, block_sz=block_sz),
+            AttenBlock(emb_d, n_heads=n_heads, block_sz=block_sz),
+            AttenBlock(emb_d, n_heads=n_heads, block_sz=block_sz),
+        )
         self.lm_head = nn.Linear(emb_d, vocab_sz)
 
 
@@ -32,7 +36,7 @@ class AttenBigramLM(nn.Module):
         tok_emb = self.embeddings(idx)  # (B, T, C=emb_d)
         pos_emb = self.position_embeddings(torch.arange(T))  # (T, C=emb_d)
         x = tok_emb + pos_emb  # (B, T, C) bc broadcasting
-        x = self.sa_head(x)
+        x = self.blocks(x)
         logits = self.lm_head(x)  # (B, T, vocab_sz)
 
         if targets is None:
