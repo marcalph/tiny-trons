@@ -14,17 +14,17 @@ torch.manual_seed(1337)
 class AttenBigramLM(nn.Module):
     """Simple Bigram model."""
 
-    def __init__(self, vocab_sz, emb_d, block_sz, n_heads):
+    def __init__(self, vocab_sz, emb_d, block_sz, n_heads, n_layer=4, dropout=0.2):
         super().__init__()
         self.block_sz = block_sz
         self.embeddings = nn.Embedding(
             vocab_sz, emb_d
         )
         self.position_embeddings = nn.Embedding(block_sz, emb_d)
-        self.blocks = nn.Sequential(
-            AttenBlock(emb_d, n_heads=n_heads, block_sz=block_sz),
-            AttenBlock(emb_d, n_heads=n_heads, block_sz=block_sz),
-            AttenBlock(emb_d, n_heads=n_heads, block_sz=block_sz),
+        self.blocks = nn.Sequential(*[
+            AttenBlock(emb_d, n_heads=n_heads, block_sz=block_sz, dropout=dropout)
+            for _ in range(n_layer)
+            ],
             nn.LayerNorm(emb_d)
         )
         self.lm_head = nn.Linear(emb_d, vocab_sz)
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     train_loader, _ = create_dataloaders(corpus, tok, block_sz=8, batch_sz=4)
 
     xb, yb = next(iter(train_loader))
-    m = AttenBigramLM(tok.vocab_sz, block_sz=12, emb_d=32, head_sz=32)
+    m = AttenBigramLM(tok.vocab_sz, block_sz=12, emb_d=32, n_heads=4)
     logits, loss = m(xb, yb)
     logger.debug(f"logits.shape -> {logits.shape}")
     logger.debug(loss)

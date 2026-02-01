@@ -48,7 +48,14 @@ if __name__ == "__main__":
         pin_memory=use_cuda,
     )
 
-    model = AttenBigramLM(tok.vocab_sz, emb_d=HPARAMS.emb_d, block_sz=HPARAMS.block_sz, n_heads=4)
+    model = AttenBigramLM(
+        tok.vocab_sz,
+        emb_d=HPARAMS.emb_d,
+        block_sz=HPARAMS.block_sz,
+        n_heads=HPARAMS.n_head,
+        n_layer=HPARAMS.n_layer,
+        dropout=HPARAMS.dropout,
+    )
     model = model.to(HPARAMS.device)
     logger.info(f"Using device: {HPARAMS.device}")
 
