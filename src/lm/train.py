@@ -3,7 +3,7 @@ from loguru import logger
 from torch.optim.adamw import AdamW
 
 from src.data.utils import Corpus, create_dataloaders
-from src.lm.bigram import BigramLM
+from src.lm.attenbigram import AttenBigramLM
 from src.lm.utils import HPARAMS, SETTINGS
 from src.tokenizer import CharTokenizer
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         pin_memory=use_cuda,
     )
 
-    model = BigramLM(tok.vocab_sz)
+    model = AttenBigramLM(tok.vocab_sz, emb_d=HPARAMS.emb_d, block_sz=HPARAMS.block_sz, head_sz=32)
     model = model.to(HPARAMS.device)
     logger.info(f"Using device: {HPARAMS.device}")
 
